@@ -93,14 +93,22 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
 
         feature_map, image, viewspace_point_tensor, visibility_filter, radii = render_pkg["feature_map"], render_pkg["render"], render_pkg["viewspace_points"], render_pkg["visibility_filter"], render_pkg["radii"]
         
+        # print(f'FEATURE MAP SIZE: {feature_map.size()}')
 
         # Loss
         gt_image = viewpoint_cam.original_image.cuda()
         Ll1 = l1_loss(image, gt_image)
         gt_feature_map = viewpoint_cam.semantic_feature.cuda()
+
+        # print(f'GT FEATURE MAP SIZE: {gt_feature_map.size()}')
+
         feature_map = F.interpolate(feature_map.unsqueeze(0), size=(gt_feature_map.shape[1], gt_feature_map.shape[2]), mode='bilinear', align_corners=True).squeeze(0) 
+
+        # print(f'FEATURE MAP SIZE AFTER INTERPOLATION: {feature_map.size()}')
+        
         if dataset.speedup:
             feature_map = cnn_decoder(feature_map)
+
         Ll1_feature = l1_loss(feature_map, gt_feature_map) 
         loss = (1.0 - opt.lambda_dssim) * Ll1 + opt.lambda_dssim * (1.0 - ssim(image, gt_image)) + 1.0 * Ll1_feature 
 
@@ -248,8 +256,8 @@ if __name__ == "__main__":
     parser.add_argument('--port', type=int, default=6009)
     parser.add_argument('--debug_from', type=int, default=-1)
     parser.add_argument('--detect_anomaly', action='store_true', default=False)
-    parser.add_argument("--test_iterations", nargs="+", type=int, default=[7_000, 30_000])
-    parser.add_argument("--save_iterations", nargs="+", type=int, default=[7_000, 30_000])
+    parser.add_argument("--test_iterations", nargs="+", type=int, default=[1_000, 3_000, 7_000, 30_000])
+    parser.add_argument("--save_iterations", nargs="+", type=int, default=[1_000, 3_000, 7_000, 30_000])
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--checkpoint_iterations", nargs="+", type=int, default=[])
     parser.add_argument("--start_checkpoint", type=str, default = None)
