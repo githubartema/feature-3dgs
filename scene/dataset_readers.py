@@ -163,6 +163,9 @@ def readColmapSceneInfo(path, foundation_model, images, eval, llffhold=8):
         semantic_feature_dir = "sam_embeddings" 
     elif foundation_model =='lseg':
         semantic_feature_dir = "rgb_feature_langseg" 
+    elif foundation_model =='denseav':
+         semantic_feature_dir = "denseav_embeddings"
+          
     cam_infos_unsorted = readColmapCameras(cam_extrinsics=cam_extrinsics, cam_intrinsics=cam_intrinsics, 
                                            images_folder=os.path.join(path, reading_dir), semantic_feature_folder=os.path.join(path, semantic_feature_dir))
     cam_infos = sorted(cam_infos_unsorted.copy(), key = lambda x : x.image_name)
