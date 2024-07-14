@@ -23,6 +23,7 @@ from plyfile import PlyData, PlyElement
 from utils.sh_utils import SH2RGB
 from scene.gaussian_model import BasicPointCloud
 import torch
+port torchaudio
 
 class CameraInfo(NamedTuple):
     uid: int
@@ -257,6 +258,22 @@ def readCamerasFromTransforms(path, transformsfile, white_background, semantic_f
             
     return cam_infos
 
+def readSceneAudio(path):
+
+     audio_file = [_ for _ in os.listdir(os.path.join(path, 'audio')) if '.wav' in _][0]
+
+     file_path = os.path.join(
+         path, 'audio', audio_file
+     )
+
+     waveform, sample_rate = torchaudio.load(file_path)
+
+     # Assume the audio is stereo (2 channels)
+     left_channel = waveform[0, :]  # First channel (left)
+     right_channel = waveform[1, :] # Second channel (right)
+
+     return [left_channel, right_channel]
+
 def readNerfSyntheticInfo(path, foundation_model, white_background, eval, extension=".png"): 
     if foundation_model =='sam':
         semantic_feature_dir = "sam_embeddings" 
@@ -301,5 +318,6 @@ def readNerfSyntheticInfo(path, foundation_model, white_background, eval, extens
 
 sceneLoadTypeCallbacks = {
     "Colmap": readColmapSceneInfo,
-    "Blender" : readNerfSyntheticInfo
+    "Blender" : readNerfSyntheticInfo,
+    "Audio": readSceneAudio
 }
